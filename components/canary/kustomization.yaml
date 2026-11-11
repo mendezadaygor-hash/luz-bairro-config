@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+# Componente OPCIONAL (Extensao do Exercicio 10): canary com pesos na Route.
+# Para ativar em producao, no overlays/prod/kustomization.yaml adicione:
+#   components:
+#     - ../../components/canary
+# e declare a imagem do canary em "images" (nome simbolico: luz-bairro-canary).
+
+resources:
+  - deployment-canary.yaml
+  - service-canary.yaml
+
+patches:
+  - target:
+      kind: Route
+      name: luz-bairro
+    patch: |-
+      - op: replace
+        path: /spec/to/weight
+        value: 90
+      - op: add
+        path: /spec/alternateBackends
+        value:
+          - kind: Service
+            name: luz-bairro-canary
+            weight: 10
